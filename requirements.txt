@@ -1,8 +1,9 @@
-pandas
-numpy
-matplotlib
-seaborn
-scikit-learn
-plotly
-dash
-GitPython
+# Data cleaning, batch processing, indicators (all current scripts)
+pandas>=2.0
+
+# Dashboard (Member 4)
+dash>=2.14
+plotly>=5.18
+
+# Machine learning segmentation (Member 4)
+scikit-learn>=1.3
