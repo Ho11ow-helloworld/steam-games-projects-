@@ -218,3 +218,23 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+
+# Steam Hidden Gems - Data files
+
+# Original large dataset (local only)
+raw_data/*.csv
+raw_data/*.zip
+
+# Generated cleaned datasets
+cleaned_data/*.csv
+
+# Generated analysis results
+outputs/*.csv
+outputs/*.json
+outputs/*.joblib
+
+# Trained machine learning models
+models/*.joblib
+
+raw_data/batch_progress.txt
