@@ -11,6 +11,14 @@ on:
 
   workflow_dispatch:
 
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: steam-batch-pipeline
+  cancel-in-progress: false
+
 jobs:
   process:
     runs-on: ubuntu-latest
@@ -26,6 +34,35 @@ jobs:
 
       - name: Install dependencies
         run: pip install "pandas>=2.0"
+
+      - name: Restore previous results
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LAST_RUN=$(gh run list \
+            --workflow batch_pipeline.yml \
+            --branch main \
+            --status success \
+            --limit 1 \
+            --json databaseId \
+            --jq '.[0].databaseId')
+
+          if [ -n "$LAST_RUN" ]; then
+            mkdir -p previous
+
+            gh run download "$LAST_RUN" \
+              --name steam-batch-results \
+              --dir previous
+
+            mkdir -p cleaned_data outputs
+
+            cp previous/cleaned_data/steam_consolidated.csv cleaned_data/
+            cp previous/outputs/batch_log.csv outputs/
+
+            echo "Previous results restored!"
+          else
+            echo "No previous results found."
+          fi
 
       - name: Clean batch
         run: python scripts/process_batch.py
