@@ -236,3 +236,5 @@ outputs/*.joblib
 
 # Trained machine learning models
 models/*.joblib
+
+raw_data/batch_progress.txt

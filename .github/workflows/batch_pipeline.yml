@@ -1,0 +1,47 @@
+
+name: Steam Batch Pipeline
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "batch.csv"
+      - "scripts/**"
+      - ".github/workflows/batch_pipeline.yml"
+
+  workflow_dispatch:
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install "pandas>=2.0"
+
+      - name: Clean batch
+        run: python scripts/process_batch.py
+
+      - name: Consolidate batch
+        run: python scripts/consolidate_batches.py
+
+      - name: Generate reports
+        run: python scripts/batch_report.py
+
+      - name: Save results
+        uses: actions/upload-artifact@v4
+        with:
+          name: steam-batch-results
+          path: |
+            cleaned_data/steam_batch_cleaned.csv
+            cleaned_data/steam_consolidated.csv
+            outputs/data_quality_report.json
+            outputs/batch_log.csv
