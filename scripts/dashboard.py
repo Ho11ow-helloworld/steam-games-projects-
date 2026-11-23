@@ -238,7 +238,19 @@ def render_gems_tab(genre, price_cat, min_reviews):
     ])
 
 
+PRICE_ORDER = ["Free", "Budget", "Mid-range", "Premium"]
+PRICE_DISPLAY = {
+    "Free": "Free ($0)",
+    "Budget": "Budget (< $5)",
+    "Mid-range": "Mid-range ($5–14.99)",
+    "Premium": "Premium (≥ $15)",
+}
+MIN_RATED_GAMES = 30  # same rule as genre_pricing.py: fewer rated games = not reliable
+
+
 def render_genre_tab():
+    import math
+
     if gp_df.empty:
         return html.Div([
             html.H3("Genre & Pricing Analysis"),
@@ -246,34 +258,116 @@ def render_genre_tab():
                     "Run genre_pricing.py and refresh."),
         ])
 
-    # Satisfaction by genre (excluding 'All' rows)
-    by_genre = gp_df[(gp_df["genre"] != "All") & (gp_df["price_category"] == "All")].copy()
+    gp = gp_df.copy()
+    overall = gp[(gp["genre"] == "All") & (gp["price_category"] == "All")]
+    market = float(overall["median_satisfaction_pct"].iloc[0]) if not overall.empty \
+        else float(gp["median_satisfaction_pct"].median())
+
+    # 1. Satisfaction by genre (axis zoomed on the real range, market line)
+    by_genre = gp[(gp["genre"] != "All") & (gp["price_category"] == "All")].copy()
     by_genre = by_genre.sort_values("median_satisfaction_pct", ascending=True)
+    low = min(by_genre["median_satisfaction_pct"].min(), market) - 3
+    high = max(by_genre["median_satisfaction_pct"].max(), market) + 4
 
     fig_genre = px.bar(
         by_genre, x="median_satisfaction_pct", y="genre",
         orientation="h",
         title="Median Satisfaction by Genre",
-        labels={"median_satisfaction_pct": "Median Satisfaction (%)", "genre": ""},
-        color="median_satisfaction_pct",
+        labels={"median_satisfaction_pct": "Median satisfaction (%)", "genre": ""},
+        color="satisfaction_gap",
         color_continuous_scale="RdYlGn",
+        color_continuous_midpoint=0,
+        text="median_satisfaction_pct",
     )
-    fig_genre.update_layout(showlegend=False, height=400)
+    fig_genre.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
+    fig_genre.add_vline(x=market, line_dash="dash", line_color="grey",
+                        annotation_text=f"Market {market:.1f}%", annotation_position="top")
+    fig_genre.update_layout(xaxis_range=[low, high], coloraxis_showscale=False, height=420,
+                            margin=dict(t=80))
 
-    # Satisfaction by price category
-    by_price = gp_df[(gp_df["genre"] == "All") & (gp_df["price_category"] != "All")].copy()
+    # 2. Satisfaction by price category, cheapest to most expensive
+    by_price = gp[(gp["genre"] == "All") & (gp["price_category"].isin(PRICE_ORDER))].copy()
+    by_price["order"] = by_price["price_category"].map(PRICE_ORDER.index)
+    by_price = by_price.sort_values("order")
+    by_price["price_label"] = by_price["price_category"].map(PRICE_DISPLAY)
+    low = min(by_price["median_satisfaction_pct"].min(), market) - 3
+    high = max(by_price["median_satisfaction_pct"].max(), market) + 3
 
     fig_price = px.bar(
-        by_price, x="price_category", y="median_satisfaction_pct",
+        by_price, x="price_label", y="median_satisfaction_pct",
         title="Median Satisfaction by Price Category",
-        labels={"median_satisfaction_pct": "Median Satisfaction (%)", "price_category": "Price Category"},
+        labels={"median_satisfaction_pct": "Median satisfaction (%)", "price_label": ""},
         color="price_category",
         color_discrete_map={"Free": "#2ecc71", "Budget": "#3498db", "Mid-range": "#f39c12", "Premium": "#e74c3c"},
+        text="median_satisfaction_pct",
     )
-    fig_price.update_layout(showlegend=False, height=400)
+    fig_price.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
+    fig_price.add_hline(y=market, line_dash="dash", line_color="grey",
+                        annotation_text=f"Market {market:.1f}%", annotation_position="top left")
+    fig_price.update_layout(yaxis_range=[low, high], showlegend=False, height=420,
+                            margin=dict(t=80))
 
-    # Promising segments
-    promising = gp_df[gp_df.get("is_promising", pd.Series(dtype=bool))].copy() if "is_promising" in gp_df.columns else pd.DataFrame()
+    # 3. Satisfaction vs competition: one dot per genre x price segment
+    seg = gp[(gp["genre"] != "All") & (gp["price_category"] != "All")].copy()
+    seg = seg.dropna(subset=["median_satisfaction_pct"])
+    seg = seg[seg["n_games"] > 0]
+    seg["segment"] = seg["genre"] + " – " + seg["price_category"]
+    reliable = seg["n_rated_games"] >= MIN_RATED_GAMES
+    promising = seg["is_promising"].astype(str).str.lower() == "true" if "is_promising" in seg.columns \
+        else pd.Series(False, index=seg.index)
+    seg["status"] = "Other segments"
+    seg.loc[~reliable, "status"] = f"Fewer than {MIN_RATED_GAMES} rated games (not reliable)"
+    seg.loc[promising, "status"] = "Promising"
+    competition_median = seg.loc[reliable, "n_games"].median()
+
+    fig_quad = go.Figure()
+    styles = {
+        f"Fewer than {MIN_RATED_GAMES} rated games (not reliable)": ("#cccccc", 9, "markers"),
+        "Other segments": ("#5b7db1", 10, "markers"),
+        "Promising": ("#e67e22", 15, "markers+text"),
+    }
+    label_position = {
+        "Adventure – Premium": "top left",
+        "Casual – Premium": "bottom center",
+        "Racing – Mid-range": "bottom center",
+    }
+    for status, (color, size, mode) in styles.items():
+        part = seg[seg["status"] == status]
+        if part.empty:
+            continue
+        fig_quad.add_trace(go.Scatter(
+            x=part["n_games"], y=part["median_satisfaction_pct"],
+            mode=mode, name=status,
+            text=part["segment"],
+            textposition=[label_position.get(name, "top center") for name in part["segment"]],
+            marker=dict(color=color, size=size, line=dict(width=1, color="white")),
+            customdata=part[["n_rated_games", "satisfaction_gap"]],
+            hovertemplate="<b>%{text}</b><br>Games competing: %{x:,}"
+                          "<br>Satisfaction: %{y:.1f}%<br>vs market: %{customdata[1]:+.1f} pts"
+                          "<br>Rated games: %{customdata[0]}<extra></extra>",
+        ))
+    fig_quad.add_hline(y=market, line_dash="dash", line_color="grey",
+                       annotation_text=f"Market satisfaction {market:.1f}%",
+                       annotation_position="bottom right")
+    if pd.notna(competition_median):
+        fig_quad.add_vline(x=competition_median, line_dash="dash", line_color="grey")
+        fig_quad.add_annotation(
+            x=math.log10(competition_median), y=0.01, xref="x", yref="paper", showarrow=False,
+            text=f"Median competition: {competition_median:,.0f} games",
+            font=dict(color="grey"), xanchor="left", yanchor="bottom",
+        )
+    fig_quad.add_annotation(
+        x=0.01, y=0.01, xref="paper", yref="paper", showarrow=False,
+        text="<b>Opportunity zone = top-left</b><br>more satisfied players, fewer competitors",
+        align="left", font=dict(color="#e67e22"), xanchor="left", yanchor="bottom",
+    )
+    fig_quad.update_layout(
+        title="Satisfaction vs Competition by Segment (genre × price)",
+        xaxis=dict(title="Number of competing games (log scale)", type="log"),
+        yaxis=dict(title="Median satisfaction (%)"),
+        legend=dict(orientation="h", y=-0.2),
+        height=520,
+    )
 
     children = [
         html.H3("Genre & Pricing Analysis"),
@@ -281,15 +375,25 @@ def render_genre_tab():
             html.Div(dcc.Graph(figure=fig_genre), style={"flex": "1", "minWidth": "400px"}),
             html.Div(dcc.Graph(figure=fig_price), style={"flex": "1", "minWidth": "400px"}),
         ]),
+        dcc.Graph(figure=fig_quad),
     ]
 
-    if not promising.empty:
-        children.append(html.H4("🌟 Promising Segments (high satisfaction, low competition)"))
+    # 4. Promising segments table: readable names, best first
+    top = seg[seg["status"] == "Promising"].sort_values("satisfaction_gap", ascending=False)
+    if not top.empty:
+        table = pd.DataFrame({
+            "Segment": top["segment"],
+            "Satisfaction (%)": top["median_satisfaction_pct"].round(1),
+            "vs market (pts)": top["satisfaction_gap"].map(lambda v: f"{v:+.1f}"),
+            "Games competing": top["n_games"].map(lambda v: f"{int(v):,}"),
+            f"Games with ≥ {MIN_RATED_GAMES} reviews": top["n_rated_games"].astype(int),
+            "Median reviews": top["median_total_reviews"].round(0).astype(int),
+        })
+        children.append(html.H4("🌟 Promising Segments (more satisfied players, fewer competitors)"))
         children.append(
             dash_table.DataTable(
-                data=promising.to_dict("records"),
-                columns=[{"name": c, "id": c} for c in promising.columns if c != "is_promising"],
-                sort_action="native",
+                data=table.to_dict("records"),
+                columns=[{"name": c, "id": c} for c in table.columns],
                 style_cell={"textAlign": "left", "padding": "8px", "fontSize": "13px"},
                 style_header={"backgroundColor": "#1b2838", "color": "white", "fontWeight": "bold"},
             )
