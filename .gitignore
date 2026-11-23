@@ -238,3 +238,5 @@ outputs/*.joblib
 models/*.joblib
 
 raw_data/batch_progress.txt
+
+raw_data/pending_batch.txt
