@@ -79,6 +79,9 @@ jobs:
       - name: Hidden Gems analysis
         run: python scripts/hidden_gems.py cleaned_data/steam_consolidated.csv --output-dir outputs/batch
 
+      - name: ML Clustering analysis
+        run: python scripts/ml_clustering.py cleaned_data/steam_consolidated.csv outputs/batch/ml_clusters.csv
+
       - name: Save results
         uses: actions/upload-artifact@v4
         with:
