@@ -9,7 +9,7 @@ from urllib.request import Request, urlopen
 ROOT = Path(__file__).resolve().parent.parent
 REPO = "Ho11ow-helloworld/steam-games-projects-"
 
-NUMBER_OF_BATCHES = 1
+NUMBER_OF_BATCHES = 3
 
 def run_script(name, *args):
     subprocess.run(
