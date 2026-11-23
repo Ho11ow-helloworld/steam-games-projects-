@@ -149,13 +149,14 @@ def flag_promising(summary, min_rated_games=MIN_RATED_GAMES):
 
 if __name__ == "__main__":
     data = load_data()
+    output_file = Path(sys.argv[2]) if len(sys.argv) > 2 else OUTPUT_FILE
     print("Games loaded:", len(data))
 
     summary = build_genre_price_summary(data)
     summary = flag_promising(summary)
 
-    OUTPUT_FILE.parent.mkdir(exist_ok=True)
-    summary.to_csv(OUTPUT_FILE, index=False)
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+    summary.to_csv(output_file, index=False)
 
     print("\nSatisfaction by price category:")
     print(summary[summary["genre"] == "All"].to_string(index=False))
@@ -167,5 +168,5 @@ if __name__ == "__main__":
     else:
         print(promising.sort_values("satisfaction_gap", ascending=False).to_string(index=False))
 
-    print("\nSaved:", OUTPUT_FILE)
+    print("\nSaved:", output_file)
     print("Genre & pricing analysis completed!")
