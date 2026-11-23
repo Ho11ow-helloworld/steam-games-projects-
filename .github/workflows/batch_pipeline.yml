@@ -82,6 +82,9 @@ jobs:
       - name: ML Clustering analysis
         run: python scripts/ml_clustering.py cleaned_data/steam_consolidated.csv outputs/batch/ml_clusters.csv
 
+      - name: Generate HTML report
+        run: python scripts/generate_html_report.py
+
       - name: Save results
         uses: actions/upload-artifact@v4
         with:
