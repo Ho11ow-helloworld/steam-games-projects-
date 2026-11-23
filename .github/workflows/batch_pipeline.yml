@@ -74,7 +74,16 @@ jobs:
         run: python scripts/batch_report.py
 
       - name: Genre & pricing analysis
-        run: python scripts/genre_pricing.py
+        run: python scripts/genre_pricing.py cleaned_data/steam_consolidated.csv outputs/batch/genre_price_summary.csv
+
+      - name: Hidden Gems analysis
+        run: python scripts/hidden_gems.py cleaned_data/steam_consolidated.csv --output-dir outputs/batch
+
+      - name: ML Clustering analysis
+        run: python scripts/ml_clustering.py cleaned_data/steam_consolidated.csv outputs/batch/ml_clusters.csv
+
+      - name: Generate HTML report
+        run: python scripts/generate_html_report.py
 
       - name: Save results
         uses: actions/upload-artifact@v4
@@ -85,4 +94,4 @@ jobs:
             cleaned_data/steam_consolidated.csv
             outputs/data_quality_report.json
             outputs/batch_log.csv
-            outputs/genre_price_summary.csv
+            outputs/batch/**

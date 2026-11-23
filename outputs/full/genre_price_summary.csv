@@ -1,0 +1,56 @@
+genre,price_category,n_games,n_rated_games,median_satisfaction_pct,satisfaction_gap,median_total_reviews,is_promising
+Action,Budget,15959,843,77.25,-4.57,101.0,False
+Action,Free,5623,338,75.74,-6.07,171.5,False
+Action,Mid-range,10959,840,83.07,1.25,146.0,False
+Action,Premium,4147,554,80.88,-0.94,725.5,False
+Adventure,Budget,14114,813,78.01,-3.81,93.0,False
+Adventure,Free,4753,289,81.16,-0.66,152.0,False
+Adventure,Mid-range,11600,912,84.4,2.59,134.5,False
+Adventure,Premium,4398,545,83.63,1.81,545.0,True
+Casual,Budget,19986,987,82.46,0.64,88.0,False
+Casual,Free,5499,288,81.65,-0.17,138.5,False
+Casual,Mid-range,10044,631,85.0,3.18,125.0,False
+Casual,Premium,2289,226,83.33,1.51,345.5,True
+Indie,Budget,29691,1621,80.65,-1.17,94.0,False
+Indie,Free,8810,571,80.26,-1.56,135.0,False
+Indie,Mid-range,18453,1479,84.35,2.53,141.0,False
+Indie,Premium,5004,611,82.36,0.54,418.0,False
+Massively Multiplayer,Budget,427,30,70.46,-11.36,191.0,False
+Massively Multiplayer,Free,1170,96,62.26,-19.56,517.0,False
+Massively Multiplayer,Mid-range,359,35,70.91,-10.91,256.0,False
+Massively Multiplayer,Premium,196,26,69.49,-12.33,1785.5,False
+RPG,Budget,5414,273,79.44,-2.38,107.0,False
+RPG,Free,2537,140,73.26,-8.56,246.0,False
+RPG,Mid-range,5508,458,81.31,-0.51,182.0,False
+RPG,Premium,2598,345,80.85,-0.97,567.0,False
+Racing,Budget,1444,72,72.22,-9.6,97.5,False
+Racing,Free,438,25,78.79,-3.03,185.0,False
+Racing,Mid-range,874,68,82.56,0.74,121.0,True
+Racing,Premium,484,46,85.08,3.26,806.0,True
+Simulation,Budget,6814,397,76.11,-5.71,97.0,False
+Simulation,Free,2465,139,76.57,-5.25,181.0,False
+Simulation,Mid-range,5820,479,80.0,-1.82,160.0,False
+Simulation,Premium,2862,363,79.97,-1.85,659.0,False
+Sports,Budget,1497,67,72.73,-9.09,81.0,False
+Sports,Free,557,42,73.04,-8.77,224.5,False
+Sports,Mid-range,1188,99,80.58,-1.24,116.0,False
+Sports,Premium,686,67,81.6,-0.22,274.0,False
+Strategy,Budget,6693,336,78.06,-3.76,104.5,False
+Strategy,Free,2631,154,74.33,-7.49,244.5,False
+Strategy,Mid-range,5541,442,79.52,-2.3,164.5,False
+Strategy,Premium,2352,307,79.8,-2.02,489.0,False
+Action,All,36688,2575,80.0,-1.82,169.0,False
+Adventure,All,34865,2559,82.0,0.18,145.0,False
+Casual,All,37818,2132,83.36,1.54,113.0,False
+Indie,All,61958,4282,82.33,0.51,132.0,False
+Massively Multiplayer,All,2152,187,67.04,-14.78,321.0,False
+RPG,All,16057,1216,80.02,-1.8,208.5,False
+Racing,All,3240,211,79.2,-2.62,154.0,False
+Simulation,All,17961,1378,78.53,-3.29,176.5,False
+Sports,All,3928,275,78.7,-3.12,126.0,False
+Strategy,All,17217,1239,78.76,-3.06,178.0,False
+All,Budget,38364,2000,80.0,-1.82,95.0,False
+All,Free,18472,840,79.03,-2.79,152.5,False
+All,Mid-range,26628,2017,83.69,1.87,146.0,False
+All,Premium,9715,1214,82.24,0.42,501.0,False
+All,All,93179,6071,81.82,0.0,150.0,False
