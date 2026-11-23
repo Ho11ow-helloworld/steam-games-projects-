@@ -31,7 +31,7 @@ Created by `scripts/cleaning.py`. Examples come from one game in `samples/steam_
 | `price_category` | text | `genre_pricing.py` (`add_price_category`) | `Free` ($0), `Budget` (< $5), `Mid-range` ($5–14.99), `Premium` (≥ $15) |
 | `hidden_gem_score` | number (0–100) | `hidden_gems.py` (`score_games`) | Lower bound of the 95% Wilson score interval for the positive-review proportion, multiplied by 100 (`z = 1.96`). Candidates are ranked from highest to lowest score. Empty when there are no reviews. |
 | `is_hidden_gem` | boolean | `hidden_gems.py` (`score_games`) | `True` when a game has 30–500 total reviews (inclusive) and at least 90% positive reviews, using the unrounded ratio. `False` otherwise. These are the current configurable default criteria. |
-| `ml_cluster` | integer | ML analysis | Game segment identified by ML *(to be added by Member 4)* |
+| ml_cluster | integer | ml_clustering.py | K-Means cluster label (0–k) assigned by clustering on price, total_reviews, satisfaction_pct, and peak_ccu. Features are log-transformed and standardized. Optimal k chosen by silhouette score. |
 
 We identify Hidden Gem candidates using review counts and satisfaction, then rank them using the Wilson score. Games without reviews remain in the indicators table but are excluded from the ranking because their satisfaction cannot be calculated.
 
