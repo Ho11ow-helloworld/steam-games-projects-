@@ -216,7 +216,17 @@ def render_gems_tab(genre, price_cat, min_reviews):
         html.H3(f"Hidden Gems Ranking ({len(df)} games)"),
         dash_table.DataTable(
             data=df[display_cols].head(20).to_dict("records"),
-            columns=[{"name": c, "id": c} for c in display_cols],
+             columns=[
+                {
+                    "name": c,
+                    "id": c,
+                    "type": "numeric",
+                    "format": {"specifier": ".2f"},
+                }
+                if c == "hidden_gem_score"
+                else {"name": c, "id": c}
+                for c in display_cols
+            ],
             sort_action="native",
             style_table={"overflowX": "auto"},
             style_cell={"textAlign": "left", "padding": "8px", "fontSize": "13px"},
