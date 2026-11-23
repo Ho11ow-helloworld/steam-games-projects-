@@ -33,7 +33,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install "pandas>=2.0"
+        run: pip install -r requirements.txt
 
       - name: Restore previous results
         env:
@@ -73,6 +73,9 @@ jobs:
       - name: Generate reports
         run: python scripts/batch_report.py
 
+      - name: Genre & pricing analysis
+        run: python scripts/genre_pricing.py
+
       - name: Save results
         uses: actions/upload-artifact@v4
         with:
@@ -82,3 +85,4 @@ jobs:
             cleaned_data/steam_consolidated.csv
             outputs/data_quality_report.json
             outputs/batch_log.csv
+            outputs/genre_price_summary.csv
