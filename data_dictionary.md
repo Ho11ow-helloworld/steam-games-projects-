@@ -29,9 +29,11 @@ Created by `scripts/cleaning.py`. Examples come from one game in `samples/steam_
 | `satisfaction_pct` | number (0–100) | `cleaning.py` | `100 × positive_reviews / total_reviews`; empty when the game has no reviews |
 | `release_year` | integer | `cleaning.py` | Year of `release_date` |
 | `price_category` | text | `genre_pricing.py` (`add_price_category`) | `Free` ($0), `Budget` (< $5), `Mid-range` ($5–14.99), `Premium` (≥ $15) |
-| `hidden_gem_score` | number | Hidden Gems analysis | Score used to rank hidden gems *(definition to be added by Member 2)* |
-| `is_hidden_gem` | boolean | Hidden Gems analysis | Whether a game meets the hidden gem criteria *(to be added by Member 2)* |
+| `hidden_gem_score` | number (0–100) | `hidden_gems.py` (`score_games`) | Lower bound of the 95% Wilson score interval for the positive-review proportion, multiplied by 100 (`z = 1.96`). Candidates are ranked from highest to lowest score. Empty when there are no reviews. |
+| `is_hidden_gem` | boolean | `hidden_gems.py` (`score_games`) | `True` when a game has 30–500 total reviews (inclusive) and at least 90% positive reviews, using the unrounded ratio. `False` otherwise. These are the current configurable default criteria. |
 | `ml_cluster` | integer | ML analysis | Game segment identified by ML *(to be added by Member 4)* |
+
+We identify Hidden Gem candidates using review counts and satisfaction, then rank them using the Wilson score. Games without reviews remain in the indicators table but are excluded from the ranking because their satisfaction cannot be calculated.
 
 ## 3. Cleaning rules (`scripts/cleaning.py`)
 
@@ -47,3 +49,19 @@ Created by `scripts/cleaning.py`. Examples come from one game in `samples/steam_
 - 4,799 games have no `genres`.
 - `estimated_owners_range` is a range, not an exact number.
 - The data is a snapshot from September 2024: prices and review counts may have changed since.
+- The Wilson method assumes binomial review outcomes. Steam reviews are voluntary and may not represent all players, so the score does not remove possible review bias.
+
+## 5. Hidden Gem ranking method
+
+We first select games with 30–500 reviews and at least 90% positive reviews. We then rank these candidates using the lower bound of the 95% Wilson score interval, multiplied by 100 (`z = 1.96`).
+
+The satisfaction percentage describes the proportion of positive reviews. The Wilson score also considers how many reviews support that percentage, providing a more conservative ranking.
+
+For example, in the shared 90-game sample, One Line has 44 positive reviews out of 45:
+
+- Satisfaction: `44 / 45 × 100 = 97.78%`.
+- Hidden Gem Score: `88.43`.
+
+The lower score reflects uncertainty associated with the limited number of reviews. For games with the same positive-review proportion, a larger review count produces a higher Wilson score.
+
+We rank candidates by Hidden Gem Score in descending order. This score is used to compare review evidence; it does not represent a probability of commercial success.
