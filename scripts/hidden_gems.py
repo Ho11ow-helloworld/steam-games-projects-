@@ -1,7 +1,7 @@
-"""Member 2: identify well-reviewed games with a limited review count.
+"""Identify and rank games with high satisfaction and limited review counts.
 
 Run from the repository root:
-    python scripts/hidden_gems.py samples/steam_sample.csv
+    python scripts/hidden_gems.py cleaned_data/steam_cleaned.csv
 """
 
 import argparse
@@ -11,13 +11,13 @@ import pandas as pd
 import plotly.express as px
 
 ROOT = Path(__file__).resolve().parent.parent
-MIN_REVIEWS = 30  # Same minimum as Member 3.
+MIN_REVIEWS = 30  # Shared minimum across game-level and genre analyses.
 MAX_REVIEWS = 500  # Provisional exploration threshold, not a Steam standard.
 MIN_SATISFACTION = 90.0  # Provisional percentage of positive reviews.
 
 
 def validate_data(df):
-    """Check the shared data contract without repeating Alec's cleaning."""
+    """Validate the required columns and consistency of cleaned input data."""
     required = ["app_id", "name", "positive_reviews", "negative_reviews",
                 "total_reviews", "satisfaction_pct"]
     missing = set(required) - set(df.columns)
@@ -72,7 +72,7 @@ def build_ranking(scored):
 
 
 def save_charts(scored, ranking, output_dir, min_reviews):
-    """Standalone Plotly HTML figures for review; Susheela integrates Dash."""
+    """Generate standalone interactive Plotly charts."""
     plotted = scored[scored["total_reviews"] >= min_reviews]
     scatter = px.scatter(
         plotted, x="total_reviews", y="satisfaction_pct",
@@ -136,8 +136,9 @@ def main():
     print(ranking[["rank", "name", "total_reviews", "satisfaction_pct", "hidden_gem_score"]]
           .head(10).round(2).to_string(index=False))
     print("Outputs:", args.output_dir.resolve())
-    print("Exploratory snapshot analysis; sample results are not market conclusions.")
+    print("Analysis completed. Results describe the selected historical dataset.")
 
 
 if __name__ == "__main__":
     main()
+
