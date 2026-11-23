@@ -76,6 +76,9 @@ jobs:
       - name: Genre & pricing analysis
         run: python scripts/genre_pricing.py
 
+      - name: Hidden Gems analysis
+        run: python scripts/hidden_gems.py cleaned_data/steam_consolidated.csv --output-dir outputs/batch
+
       - name: Save results
         uses: actions/upload-artifact@v4
         with:
@@ -86,3 +89,4 @@ jobs:
             outputs/data_quality_report.json
             outputs/batch_log.csv
             outputs/genre_price_summary.csv
+            outputs/batch/**
