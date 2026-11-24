@@ -123,18 +123,24 @@ def run_clustering(df):
     return df
 
 
+
 if __name__ == "__main__":
     data = load_data()
+    output_file = Path(sys.argv[2]) if len(sys.argv) > 2 else OUTPUT_FILE
     print(f"Games loaded: {len(data)}")
     result = run_clustering(data)
+
     output_cols = [
         "app_id", "name", "price", "genres", "total_reviews",
         "satisfaction_pct", "peak_ccu", "release_year", "ml_cluster",
     ]
+
     output = result[[c for c in output_cols if c in result.columns]]
-    OUTPUT_FILE.parent.mkdir(exist_ok=True)
-    output.to_csv(OUTPUT_FILE, index=False)
-    print(f"\nSaved: {OUTPUT_FILE}")
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+    output.to_csv(output_file, index=False)
+
+    print(f"\nSaved: {output_file}")
     print(f"Games with cluster: {output['ml_cluster'].notna().sum()}")
     print(f"Games without cluster: {output['ml_cluster'].isna().sum()}")
     print("ML clustering completed!")
+
