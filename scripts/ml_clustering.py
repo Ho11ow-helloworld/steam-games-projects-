@@ -31,7 +31,7 @@ INPUT_CANDIDATES = [
 ]
 
 FEATURES = ["price", "total_reviews", "satisfaction_pct", "peak_ccu"]
-MIN_REVIEWS_FOR_ML = 30  # same minimum as hidden_gems.py and genre_pricing.py
+MIN_REVIEWS_FOR_ML = 30
 K_MIN = 2
 K_MAX = 6
 RANDOM_STATE = 42
@@ -48,7 +48,7 @@ def load_data():
 
 def prepare_features(df):
     eligible = df[df["total_reviews"] >= MIN_REVIEWS_FOR_ML].copy()
-    print(f"Eligible games (>= {MIN_REVIEWS_FOR_ML} reviews): {len(eligible)} / {len(df)}")
+    print(f"Eligible games (>= {MIN_REVIEWS_FOR_ML} review): {len(eligible)} / {len(df)}")
     X = eligible[FEATURES].copy()
     X = X.fillna(0)
     X["total_reviews"] = np.log1p(X["total_reviews"])
@@ -82,7 +82,6 @@ def interpret_clusters(df, features=FEATURES):
     for cluster_id in profile.index:
         row = profile.loc[cluster_id]
         parts = []
-        # Same 4 price categories as genre_pricing.py and the dashboard
         if row["price"] == 0:
             parts.append("Free")
         elif row["price"] < 5:
@@ -128,7 +127,6 @@ def run_clustering(df):
 if __name__ == "__main__":
     data = load_data()
     output_file = Path(sys.argv[2]) if len(sys.argv) > 2 else OUTPUT_FILE
-
     print(f"Games loaded: {len(data)}")
     result = run_clustering(data)
 
@@ -138,7 +136,6 @@ if __name__ == "__main__":
     ]
 
     output = result[[c for c in output_cols if c in result.columns]]
-
     output_file.parent.mkdir(parents=True, exist_ok=True)
     output.to_csv(output_file, index=False)
 
