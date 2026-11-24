@@ -31,7 +31,7 @@ INPUT_CANDIDATES = [
 ]
 
 FEATURES = ["price", "total_reviews", "satisfaction_pct", "peak_ccu"]
-MIN_REVIEWS_FOR_ML = 1
+MIN_REVIEWS_FOR_ML = 30  # same minimum as hidden_gems.py and genre_pricing.py
 K_MIN = 2
 K_MAX = 6
 RANDOM_STATE = 42
@@ -48,7 +48,7 @@ def load_data():
 
 def prepare_features(df):
     eligible = df[df["total_reviews"] >= MIN_REVIEWS_FOR_ML].copy()
-    print(f"Eligible games (>= {MIN_REVIEWS_FOR_ML} review): {len(eligible)} / {len(df)}")
+    print(f"Eligible games (>= {MIN_REVIEWS_FOR_ML} reviews): {len(eligible)} / {len(df)}")
     X = eligible[FEATURES].copy()
     X = X.fillna(0)
     X["total_reviews"] = np.log1p(X["total_reviews"])
@@ -82,12 +82,15 @@ def interpret_clusters(df, features=FEATURES):
     for cluster_id in profile.index:
         row = profile.loc[cluster_id]
         parts = []
+        # Same 4 price categories as genre_pricing.py and the dashboard
         if row["price"] == 0:
             parts.append("Free")
-        elif row["price"] >= 15:
-            parts.append("Premium")
-        else:
+        elif row["price"] < 5:
             parts.append("Budget")
+        elif row["price"] < 15:
+            parts.append("Mid-range")
+        else:
+            parts.append("Premium")
         if row["total_reviews"] >= 100:
             parts.append("Popular")
         else:
