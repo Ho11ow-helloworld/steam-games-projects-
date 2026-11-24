@@ -385,6 +385,85 @@ for i, fig in enumerate(figures):
         charts += promising_table_html
 
 
+# 5. Data Quality and Automated Insights
+
+total_games = len(games)
+
+quality_checks = {
+    "Duplicate game IDs": int(games["app_id"].duplicated().sum()),
+    "Missing game names": int(games["name"].isna().sum()),
+    "Missing genres": int(games["genres"].isna().sum()),
+    "Missing release dates": int(games["release_date"].isna().sum()),
+    "Games without reviews": int((games["total_reviews"] == 0).sum())
+}
+
+quality_rows = ""
+
+for name, count in quality_checks.items():
+    percentage = (count / total_games * 100) if total_games else 0
+
+    quality_rows += (
+        f"<tr><td>{name}</td>"
+        f"<td>{count:,}</td>"
+        f"<td>{percentage:.1f}%</td></tr>"
+    )
+
+quality_html = f"""
+<h2>Data Quality Summary</h2>
+<p>Quality checks on {total_games:,} consolidated batch games.</p>
+<table class="results-table">
+    <tr>
+        <th>Quality Indicator</th>
+        <th>Count</th>
+        <th>Percentage</th>
+    </tr>
+    {quality_rows}
+</table>
+"""
+
+# Automatically summarize the current analysis results
+insights = [
+    f"{total_games:,} games have been consolidated from processed batches.",
+    f"{len(gems):,} Hidden Gem candidates were identified.",
+    f"{len(clustered):,} games were assigned to K-Means clusters.",
+]
+
+if pd.notna(market):
+    insights.append(
+        f"Overall median player satisfaction is {market:.1f}% "
+        "among games with at least 30 reviews."
+    )
+
+if top.empty:
+    insights.append(
+        "No genre-price segments currently satisfy both the "
+        "reliability and opportunity criteria."
+    )
+else:
+    insights.append(
+        f"{len(top)} promising genre-price segments were identified."
+    )
+
+# Detect outdated clustering results
+outdated_ml = int((clustered["total_reviews"] < 30).sum())
+
+if outdated_ml > 0:
+    insights.append(
+        f"WARNING: {outdated_ml} clustered games have fewer "
+        "than 30 reviews. Regenerate the ML results."
+    )
+
+insights.append(
+    "These findings describe the consolidated batch dataset, "
+    "not the complete Steam dataset."
+)
+
+insights_html = (
+    "<h2>Automated Insights</h2><ul>"
+    + "".join(f"<li>{item}</li>" for item in insights)
+    + "</ul>"
+)
+
 html = f"""
 <!DOCTYPE html>
 <html>
@@ -423,9 +502,16 @@ html = f"""
         <p>Total games: {len(games):,}</p>
         <p>Hidden Gem candidates: {len(gems):,}</p>
         <p>ML clustered games: {len(clustered):,}</p>
+   
     </div>
+
+    {quality_html}
+
     {charts}
+
+    {insights_html}
 </body>
+
 </html>
 """
 
